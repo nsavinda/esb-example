@@ -1,0 +1,62 @@
+plugins {
+    id 'groovy'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+
+}
+
+group 'com.example'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Apache Camel Core
+    implementation 'org.apache.camel:camel-core:3.20.1'
+
+    // Camel Groovy Component
+    implementation 'org.apache.camel:camel-groovy:3.20.1'
+
+    // Camel Kafka Component
+    implementation 'org.apache.camel:camel-kafka:3.20.1'
+
+      // Camel Jackson Component for JSON processing
+    implementation 'org.apache.camel:camel-jackson:3.20.1'
+
+    // Camel Netty HTTP Component
+    implementation 'org.apache.camel:camel-netty-http:3.20.1'
+
+    // Groovy
+    implementation 'org.codehaus.groovy:groovy-all:3.0.9'
+
+     // Add SLF4J logging implementation
+    implementation 'org.slf4j:slf4j-simple:1.7.32'
+
+    // Test dependencies (optional)
+    testImplementation 'org.apache.camel:camel-test:3.20.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+}
+
+shadowJar {
+    archiveClassifier.set('')
+}
+
+
+application {
+    mainClassName = 'RestToKafka'
+}
+
+// jar {
+//     manifest {
+//         attributes(
+//             'Main-Class': 'RestToKafka'
+//         )
+//     }
+// }
+
+test {
+    useJUnitPlatform()
+}
