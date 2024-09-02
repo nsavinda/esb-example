@@ -14,4 +14,4 @@ COPY . .
 EXPOSE 8080
 
 # Set up the command to run your application with Gradle's continuous build
-ENTRYPOINT ["gradle", "--continuous", "run", "--args='--server.port=8080'"]
+# ENTRYPOINT ["gradle", "--continuous", "run", "--args='--server.port=8080'"]

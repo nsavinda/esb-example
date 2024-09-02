@@ -12,14 +12,15 @@ class RestToKafkaRoute extends RouteBuilder {
 
         rest("/messages")
             .post()
-            .to("log:received") // Log received message
+            .to("direct:logRequest") // Log received message
 
         from("direct:logRequest")
             .log("Incoming request: \${headers}, Body: \${body}")
             .filter(body().isNotNull()) // Filter out null bodies
             .filter(body().regex(".+")) // Filter out empty bodies
             .log("Received Message: \${body}")
-            .to("kafka:my-topic?brokers=kafka:9092")
+            .to("kafka:test?brokers=kafka:9092")
+            .log("Message sent to Kafka: \${body}")
             // .to("log:processed"); // Log after processing
     }
 }

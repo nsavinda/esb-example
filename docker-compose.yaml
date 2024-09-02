@@ -1,37 +1,45 @@
-version: '3.8'
-
 services:
   kafka:
     container_name: kafka
     hostname: kafka
-    image: wurstmeister/kafka:latest
+    image: confluentinc/cp-kafka:latest
     ports:
       - "9092:9092"
     environment:
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER: PLAINTEXT://:9092
+
+      KAFKA_CREATE_TOPICS: "test:1:1"
     depends_on:
       - zookeeper
     deploy:
       resources:
         limits:
           cpus: '1.0'
-          memory: 1024M
+          memory: 2024M
     networks:
       - sritel-network
 
   zookeeper:
     container_name: zookeeper
     hostname: zookeeper
-    image: wurstmeister/zookeeper:latest
+    image: confluentinc/cp-zookeeper:latest
     ports:
       - "2181:2181"
-    # deploy:
-    #   resources:
-    #     limits:
-    #       cpus: '1.0'
-    #       memory: 2424M
+    environment:
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2424M
     networks:
       - sritel-network
 
@@ -43,12 +51,30 @@ services:
       - "8180:8180"
     volumes:
       - ./camel:/app
+
+    command: ['gradle', "--continuous", "run",  "--args='--server.port=8080'" ]
     depends_on:
       - kafka
     networks:
       - sritel-network
 
+  notification:
+    build:
+      context: ./notification/
+      dockerfile: Dockerfile
+    ports:
+      - "8181:8080"
+    volumes:
+      - ./notification:/app
+
+    command: ['watchmedo', 'auto-restart', '--directory=./', '--pattern=*.py', '--recursive', 'python', 'main.py']
+    depends_on:
+      - kafka
+      - camel-app
+    networks:
+      - sritel-network
 
 networks:
   sritel-network:
+    name: sritel-network
     driver: bridge
